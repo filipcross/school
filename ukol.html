@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Černá díra a asteroidy</title>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        background-color: black; /* Černé pozadí */
+    }
+
+    canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+</style>
+</head>
+<body>
+<canvas id="myCanvas"></canvas>
+<script>
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+
+    // Nastavení rozměrů canvasu na velikost okna prohlížeče
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Pole pro ukládání pozic hvězd
+    var stars = [];
+
+    // Pole pro ukládání asteroidů
+    var asteroids = [];
+
+    // Černá díra
+    var blackHole = {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: 10, // Malý poloměr
+        attraction: 0.5 // Přitahovací síla
+    };
+
+    // Rychlost černé díry v obou osách
+    var blackHoleSpeedX = Math.random() * 4 - 2; // Náhodná rychlost v rozmezí -2 až 2
+    var blackHoleSpeedY = Math.random() * 4 - 2;
+
+    // Nahrání obrázků asteroidů
+    var asteroidImages = [];
+    for (let i = 1; i <= 5; i++) { // Smazáním 6.png jsme změnili rozsah na 5
+        let img = new Image();
+        img.src = i + ".png";
+        asteroidImages.push(img);
+    }
+
+    // Třída reprezentující asteroid
+    class Asteroid {
+        constructor(x, y, radius, speedX, speedY, image) {
+            this.x = x;
+            this.y = y;
+            this.radius = radius;
+            this.speedX = speedX;
+            this.speedY = speedY;
+            this.image = image;
+        }
+
+        // Metoda pro vykreslení asteroidu
+        draw() {
+            ctx.drawImage(this.image, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+        }
+
+        // Metoda pro pohyb asteroidu
+        move() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+        }
+
+        // Metoda pro detekci kolize s černou dírou
+        checkBlackHoleCollision() {
+            var distance = Math.sqrt((this.x - blackHole.x) ** 2 + (this.y - blackHole.y) ** 2);
+            if (distance < blackHole.radius) {
+                // Asteroid se dotkl černé díry
+                return true;
+            }
+            return false;
+        }
+    }
+
+    // Funkce pro vytvoření nového asteroidu
+    function createAsteroid() {
+        var radius = Math.random() * 20 + 20; // Náhodný poloměr větší než předchozí
+        var startX, startY;
+
+        // Náhodně určit počáteční polohu mimo obrazovku
+        if (Math.random() < 0.5) {
+            // Asteroid začíná na levé nebo pravé straně obrazovky
+            startX = Math.random() < 0.5 ? -radius : canvas.width + radius;
+            startY = Math.random() * canvas.height;
+        } else {
+            // Asteroid začíná na horní nebo dolní straně obrazovky
+            startX = Math.random() * canvas.width;
+            startY = Math.random() < 0.5 ? -radius : canvas.height + radius;
+        }
+
+        // Náhodná rychlost
+        var speedX = Math.random() * 4 - 2; // Náhodná rychlost v rozmezí -2 až 2
+        var speedY = Math.random() * 4 - 2;
+
+        // Náhodný obrázek asteroidu z pole
+        var image = asteroidImages[Math.floor(Math.random() * asteroidImages.length)];
+        var asteroid = new Asteroid(startX, startY, radius, speedX, speedY, image);
+        asteroids.push(asteroid);
+    }
+
+    // Funkce pro vtahování asteroidů do černé díry
+    function attractAsteroids() {
+        asteroids.forEach(function(asteroid) {
+            var dx = blackHole.x - asteroid.x;
+            var dy = blackHole.y - asteroid.y;
+            var distance = Math.sqrt(dx * dx + dy * dy);
+            var force = blackHole.attraction * blackHole.radius * 100 / distance ** 2; // Vzorec pro gravitační sílu
+
+            var accelerationX = force * dx / distance;
+            var accelerationY = force * dy / distance;
+
+            asteroid.speedX += accelerationX;
+            asteroid.speedY += accelerationY;
+        });
+    }
+
+    // Nastavení pohybu černé díry
+    function moveBlackHole() {
+        // Pohyb černé díry
+        blackHole.x += blackHoleSpeedX;
+        blackHole.y += blackHoleSpeedY;
+
+        // Odražení od okrajů canvasu
+        if (blackHole.x - blackHole.radius < 0 || blackHole.x + blackHole.radius > canvas.width) {
+            blackHoleSpeedX *= -1; // Změna směru
+        }
+        if (blackHole.y - blackHole.radius < 0 || blackHole.y + blackHole.radius > canvas.height) {
+            blackHoleSpeedY *= -1; // Změna směru
+        }
+    }
+
+    // Funkce pro vytvoření hvězd
+    function createStars() {
+       
+        for (let i = 0; i < 500; i++) {
+            let x = Math.random() * canvas.width;
+            let y = Math.random() * canvas.height;
+            let brightness = Math.random() * 0.8 + 0.2; // Náhodná jasnost
+            stars.push({x: x, y: y, brightness: brightness});
+        }
+    }
+
+    // Funkce pro vykreslení hvězd
+    function drawStars() {
+        stars.forEach(function(star) {
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, 1, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255, 255, 255, " + star.brightness + ")"; // Bílá barva s nastavenou průhledností
+            ctx.fill();
+            ctx.closePath();
+        });
+    }
+
+    // Animace hvězd
+    function animateStars() {
+        stars.forEach(function(star) {
+            // Blikání hvězd
+            star.brightness += (Math.random() * 0.1 - 0.05);
+            star.brightness = Math.max(0.2, Math.min(1, star.brightness)); // Omezit jasnost mezi 0.2 a 1
+        });
+    }
+
+    // Animace
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        drawStars(); // Vykreslit hvězdy
+
+        animateStars(); // Animace hvězd
+
+        moveBlackHole(); // Pohyb černé díry
+
+        // Vykreslení a pohyb asteroidů
+        asteroids.forEach(function(asteroid) {
+            asteroid.draw();
+            asteroid.move();
+            if (asteroid.checkBlackHoleCollision()) {
+                // Odstranění asteroidu, který se dotkl černé díry
+                asteroids.splice(asteroids.indexOf(asteroid), 1);
+                blackHole.radius += 1; // Zvětšení černé díry
+            }
+        });
+
+        // Vykreslení černé díry s outline
+        ctx.beginPath();
+        ctx.arc(blackHole.x, blackHole.y, blackHole.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = "gray"; // Barva outline
+        ctx.lineWidth = 2; // Šířka outline
+        ctx.stroke();
+        ctx.fillStyle = "black";
+        ctx.fill();
+        ctx.closePath();
+
+        attractAsteroids(); // Vtahování asteroidů do černé díry
+
+        requestAnimationFrame(animate);
+    }
+
+    // Spuštění animace
+    animate();
+
+    // Vytvoření hvězd
+    createStars();
+
+    // Přidání nových asteroidů každých 2 sekundy
+    setInterval(createAsteroid, 100);
+</script>
+</body>
+</html>
