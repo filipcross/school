@@ -50,12 +50,13 @@
                 let action = parts[0];
                 let param = parseInt(parts[1]) || 1;
                 
-                switch (action) {
-                    case "KROK": moveForward(param); break;
-                    case "VLEVOBOK": turnLeft(param); break;
-                    case "POLOZ": placeItem(parts[1]); break;
-                    case "RESET": resetGrid(); break;
-                }
+                switch (action.toUpperCase()) {
+    case "KROK": moveForward(param); break;
+    case "VLEVOBOK": turnLeft(param); break;
+    case "POLOZ": placeItem(parts[1]); break;
+    case "RESET": resetGrid(); break;
+}
+
             }
             createGrid();
         }
