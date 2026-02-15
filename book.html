@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Kniha o League of Legends</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      background-color: #0d1b2a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    .book-wrapper {
+      position: relative;
+      width: 900px;
+      height: 600px;
+      perspective: 2000px;
+    }
+
+    .book {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      position: relative;
+    }
+
+    .page {
+      width: 50%;
+      height: 100%;
+      background: white;
+      padding: 30px;
+      box-sizing: border-box;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+      z-index: 1;
+      position: relative;
+      backface-visibility: hidden;
+      transform-style: preserve-3d;
+    }
+
+    .left {
+      border-right: 1px solid #ccc;
+    }
+
+    .right {
+      border-left: 1px solid #ccc;
+    }
+
+    .flipping-page {
+      position: absolute;
+      width: 50%;
+      height: 100%;
+      top: 0;
+      background: white;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      transform-origin: left;
+      transition: transform 1s ease;
+      z-index: 3;
+      padding: 30px;
+      box-sizing: border-box;
+      pointer-events: none;
+      backface-visibility: hidden;
+      transform-style: preserve-3d;
+    }
+
+    .flip-left {
+      left: 0;
+      transform-origin: right;
+    }
+
+    .flip-right {
+      right: 0;
+      transform-origin: left;
+    }
+
+    .controls {
+      position: absolute;
+      bottom: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+    }
+
+    .controls button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #1b263b;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .page-number {
+      position: absolute;
+      bottom: 10px;
+      right: 20px;
+      font-size: 14px;
+      color: #999;
+    }
+
+    .page-content h2 {
+      margin-top: 0;
+      font-size: 20px;
+      color: #111;
+    }
+
+    .page-content p {
+      font-size: 16px;
+      margin: 10px 0;
+      line-height: 1.8;
+      text-align: justify;
+    }
+  </style>
+</head>
+<body>
+
+<div class="book-wrapper">
+  <div class="book">
+    <div class="page left" id="leftPage"><div class="page-number" id="leftNumber"></div></div>
+    <div class="page right" id="rightPage"><div class="page-number" id="rightNumber"></div></div>
+    <div class="flipping-page" id="flipPage"></div>
+  </div>
+  <div class="controls">
+    <button onclick="prevPage()">Předchozí</button>
+    <button onclick="nextPage()">Další</button>
+  </div>
+</div>
+
+<script>
+  const pages = [
+    '<div class="page-content"><h2>Vítej ve světě League of Legends!</h2><p>League of Legends není jen obyčejná online hra. Je to rozsáhlý virtuální svět, ve kterém se střetávají šampioni z různých koutů imaginárního vesmíru. Každý z nich má své motivace, schopnosti a příběh. Spolu se svým týmem bojuješ nejen o vítězství, ale i o čest a zábavu. Tato hra si získala miliony hráčů svou kombinací strategie, dovedností a týmové spolupráce. Vstup do světa, kde každé rozhodnutí a každý pohyb může rozhodnout o výsledku bitvy.</p></div>',
+    
+    '<div class="page-content"><h2>League of Legends je týmová strategická hra 5v5</h2><p>V herním režimu Summoner\'s Rift se utkávají dva týmy po pěti hráčích, kteří obsazují různé role a společně se snaží dobýt nepřátelskou základnu. Každá role má svůj význam, od silného Toplanera po podpůrného Supporta. Úspěch závisí na schopnosti spolupracovat, předvídat pohyb nepřítele a správně využít momenty k útoku či obraně. Hra není pouze o rychlosti, ale hlavně o strategickém myšlení a týmové souhře. Každé rozhodnutí může ovlivnit vývoj zápasu a každý člen týmu má v průběhu hry klíčovou úlohu. Bez koordinace a porozumění jednotlivým pozicím se zápas může rychle zvrátit v neprospěch týmu. Proto je důležité, aby hráči nejen zvládli techniku, ale i komunikaci a čtení situací na mapě.</p></div>',
+
+    '<div class="page-content"><h2>Každý hráč ovládá unikátního šampiona</h2><p>Ve hře je více než 160 šampionů, z nichž každý má jedinečné schopnosti, vzhled i příběh. Hráči si vybírají šampiony podle svého stylu hry – někdo preferuje útočný přístup, jiný zase podporu nebo kontrolu bojiště. Naučit se správně hrát více šampionů je klíčem k úspěchu. Každý šampion přináší specifickou dynamiku do zápasu a zvládnutí jejich schopností vyžaduje čas, trénink a herní intuici. Mistři šampionů často dominují zápasům a jejich dovednosti dokáží zvrátit vývoj hry ve prospěch celého týmu.</p></div>',
+
+    '<div class="page-content"><h2>Cílem hry je zničit nepřátelský Nexus</h2><p>Nexus je hlavní budova každého týmu, která se nachází hluboko v základně. Hráči k němu musejí prorazit přes obranné věže, miniony a protivníky, kteří brání jeho přístup. Strategie, kontrola mapy a koordinované útoky jsou klíčem k úspěchu. Tým, který efektivně spolupracuje, ovládá objektivy a využívá chyby nepřítele, má vyšší šanci dosáhnout cíle. Útok na Nexus je vrcholným momentem každého zápasu a často rozhoduje o tom, kdo se stane vítězem.</p></div>',
+
+    '<div class="page-content"><h2>Role v týmu</h2><p>Každý hráč ve hře má specifickou roli: Toplaner, Jungler, Midlaner, ADC a Support. Každá z těchto rolí má své jasně dané úkoly a zodpovědnosti. Toplaner se obvykle stará o horní část mapy a bývá odolným bojovníkem. Jungler se pohybuje v džungli a zajišťuje kontrolu nad neutrálními oblastmi a objektivy. Midlaner je často zdrojem poškození a kontroly, zatímco ADC působí na spodní lince jako hlavní střelec. Support se stará o ochranu a podporu týmu, zejména svého ADC. Správná spolupráce všech těchto rolí určuje úspěch celého týmu.</p></div>',
+
+    '<div class="page-content"><h2>Mapa Summoner’s Rift</h2><p>Summoner’s Rift je hlavní herní mapa v League of Legends. Je rozdělena na tři linie: horní (top), střední (mid) a spodní (bot). Mezi těmito liniemi se nachází džungle, ve které se pohybují neutrální monstra a důležité objektivy. Hráči zde bojují o kontrolu nad draky, Heraldem a Baronem Nashem, kteří poskytují výhody celému týmu. Mapa je symetrická a navržená tak, aby podporovala strategii, rotace a týmovou koordinaci. Správné rozložení sil na mapě je nezbytné pro dosažení vítězství.</p></div>'
+  ];
+
+  let currentIndex = 0;
+  let flipping = false;
+
+  const left = document.getElementById('leftPage');
+  const right = document.getElementById('rightPage');
+  const flip = document.getElementById('flipPage');
+
+  function updatePages() {
+    left.innerHTML = pages[currentIndex] || '';
+    right.innerHTML = pages[currentIndex + 1] || '';
+    left.innerHTML += `<div class='page-number'>${currentIndex + 1}</div>`;
+    right.innerHTML += `<div class='page-number'>${currentIndex + 2}</div>`;
+  }
+
+  function nextPage() {
+    if (flipping || currentIndex + 2 >= pages.length) return;
+    flipping = true;
+    flip.className = 'flipping-page flip-right';
+    flip.innerHTML = pages[currentIndex + 1] + `<div class='page-number'>${currentIndex + 2}</div>`;
+    flip.style.visibility = 'visible';
+    flip.style.zIndex = 3;
+    flip.style.transform = 'rotateY(0deg)';
+    requestAnimationFrame(() => {
+      flip.style.transform = 'rotateY(-180deg)';
+    });
+    setTimeout(() => {
+      currentIndex += 2;
+      flip.style.visibility = 'hidden';
+      flip.style.zIndex = 0;
+      updatePages();
+      flipping = false;
+    }, 1000);
+  }
+
+  function prevPage() {
+    if (flipping || currentIndex - 2 < 0) return;
+    flipping = true;
+    flip.className = 'flipping-page flip-left';
+    flip.innerHTML = pages[currentIndex - 1] + `<div class='page-number'>${currentIndex}</div>`;
+    flip.style.visibility = 'visible';
+    flip.style.zIndex = 3;
+    flip.style.transform = 'rotateY(180deg)';
+    requestAnimationFrame(() => {
+      flip.style.transform = 'rotateY(0deg)';
+    });
+    setTimeout(() => {
+      currentIndex -= 2;
+      flip.style.visibility = 'hidden';
+      flip.style.zIndex = 0;
+      updatePages();
+      flipping = false;
+    }, 1000);
+  }
+
+  updatePages();
+</script>
+
+</body>
+</html>
