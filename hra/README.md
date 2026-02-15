@@ -13,4 +13,4 @@ Cílem je znovu vytvořit základní herní mechaniky originálu – skákání 
 Projekt bude vytvářen pomocí:
 - Herní engine: Godot 4.x
 - Programovací jazyk: GDScript
-- Grafické nástroje: Aseprite (pro pixel art), Krita (pro pozadí a UI), Godot TileMap editor
+- Grafické nástroje: Piskel (pro pixel art), Krita (pro pozadí a UI), Godot TileMap editor
