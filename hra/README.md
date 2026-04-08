@@ -1,5 +1,7 @@
 # Donkey Kong: Retro Rampage+
 
+promo k naší hře: https://youtu.be/IZBDXoSwFKI
+
 Vylepšená verze studentské 2D retro plošinovky v Godot 4.
 
 ## Co je nově
